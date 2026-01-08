@@ -17,7 +17,7 @@ class ForecastExContractFactory:
         self.ibkr_client = ibkr_client
         self._contract_cache: Dict[str, Contract] = {}
 
-    async def _find_contract(self, symbol_root: str, strike: float, expiry: str, right: str) -> Optional[Contract]:
+    def _find_contract(self, symbol_root: str, strike: float, expiry: str, right: str) -> Optional[Contract]:
         """
         Internal method to search for a specific ForecastEx contract using IBKR.
         Args:
@@ -37,10 +37,10 @@ class ForecastExContractFactory:
             strike=strike,
             lastTradeDateOrContractMonth=expiry # YYYYMMDD
         )
-        
+
         print(f"Searching for ForecastEx contract: {symbol_root} {strike} {expiry} {right}")
-        details = await self.ibkr_client.get_contract_details(contract)
-        
+        details = self.ibkr_client.get_contract_details(contract)
+
         if details:
             # Assuming the first matching contract is sufficient for now.
             # In a real scenario, you might need more sophisticated matching logic.
@@ -50,7 +50,7 @@ class ForecastExContractFactory:
             print(f"No ForecastEx contract found for {symbol_root} {strike} {expiry} {right}")
             return None
 
-    async def get_forecastex_contract(self, description: str, strike: float, expiry_date: str, is_yes: bool) -> Optional[Contract]:
+    def get_forecastex_contract(self, description: str, strike: float, expiry_date: str, is_yes: bool) -> Optional[Contract]:
         """
         Maps a human description to a specific ForecastEx Contract object.
         Args:
@@ -81,7 +81,7 @@ class ForecastExContractFactory:
             print(f"Returning cached contract for {cache_key}")
             return self._contract_cache[cache_key]
 
-        contract = await self._find_contract(symbol_root, strike, expiry_ibkr_format, right)
+        contract = self._find_contract(symbol_root, strike, expiry_ibkr_format, right)
         if contract:
             self._contract_cache[cache_key] = contract
         return contract
@@ -89,20 +89,16 @@ class ForecastExContractFactory:
 # Example Usage (for testing)
 async def main():
     from src.signal_server.config import settings
-    from ib_insync import IB
 
-    ib = IB()
+    ibkr_client = IBKRClient()
+
     try:
-        await ib.connect(settings.IB_HOST, settings.IB_PORT, settings.IB_CLIENT_ID)
-
-        ibkr_client = IBKRClient()
-        ibkr_client.ib = ib # Use the connected IB instance
-        ibkr_client._connected = True
+        await ibkr_client.connect(settings.IB_HOST, settings.IB_PORT, settings.IB_CLIENT_ID)
 
         factory = ForecastExContractFactory(ibkr_client)
 
         # Example: Find a 'Yes' contract for "US CPI YoY" expiring on 2026-03-15 with strike 100
-        contract_yes = await factory.get_forecastex_contract(
+        contract_yes = factory.get_forecastex_contract(
             description="US CPI YoY",
             strike=100.0,
             expiry_date="2026-03-15",
@@ -110,9 +106,9 @@ async def main():
         )
         if contract_yes:
             print(f"Successfully found 'Yes' contract: {contract_yes.localSymbol}")
-        
+
         # Example: Find a 'No' contract for "US CPI YoY" expiring on 2026-03-15 with strike 100
-        contract_no = await factory.get_forecastex_contract(
+        contract_no = factory.get_forecastex_contract(
             description="US CPI YoY",
             strike=100.0,
             expiry_date="2026-03-15",
@@ -124,8 +120,7 @@ async def main():
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
-        if ib.isConnected():
-            ib.disconnect()
+        ibkr_client.disconnect()
 
 if __name__ == "__main__":
     import asyncio

@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from datetime import datetime
+from pydantic import BaseModel, Field
+from datetime import datetime, timezone
 from typing import Literal, Optional
 
 class TradeIntent(BaseModel):
@@ -14,7 +14,7 @@ class TradeIntent(BaseModel):
     limit_price: float
     order_type: Literal['LMT'] = 'LMT'
     mode: Literal['paper', 'live']
-    timestamp: datetime = datetime.utcnow()
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: Literal['PENDING', 'EXECUTED', 'CANCELLED', 'FAILED'] = 'PENDING'
     transaction_id: Optional[str] = None # IBKR orderId or similar
     notes: Optional[str] = None

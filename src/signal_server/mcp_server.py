@@ -1,12 +1,12 @@
 import asyncio
 from typing import Optional
-from fastmcp import FastMCP, mcp
+from fastmcp import FastMCP
 from src.signal_server.polymarket_client import PolymarketClient
 from src.signal_server.config import settings
 
 mcp_server = FastMCP(name="polymarket_signal_server")
 
-@mcp.resource("polymarket://probability/{condition_id}")
+@mcp_server.resource("polymarket://probability/{condition_id}")
 async def get_polymarket_probability(condition_id: str) -> Optional[float]:
     """
     Fetches the liquidity-weighted probability for a given Polymarket condition ID.
@@ -24,7 +24,7 @@ async def get_polymarket_probability(condition_id: str) -> Optional[float]:
     print(f"Polymarket probability for {condition_id}: {probability}")
     return probability
 
-@mcp.tool("get_arb_spread")
+@mcp_server.tool()
 async def get_arb_spread(event_id: str, regulated_price: float, days_to_expiry: int) -> Optional[float]:
     """
     Calculates the yield-adjusted arbitrage spread between Polymarket probability and a regulated venue price.
