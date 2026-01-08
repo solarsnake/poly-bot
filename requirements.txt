@@ -1,0 +1,12 @@
+fastmcp
+py-clob-client
+ib_insync
+pydantic>=2.0
+pydantic-settings>=2.0
+python-dotenv
+requests
+aiohttp
+websockets
+numpy
+pandas
+pytest>=7.0
