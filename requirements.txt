@@ -10,3 +10,13 @@ websockets
 numpy
 pandas
 pytest>=7.0
+
+# Sentiment Analysis Dependencies
+textblob>=0.17.1
+transformers>=4.30.0  # For FinBERT (optional, large download)
+torch>=2.0.0  # For FinBERT (optional, large download)
+
+# News API (no install needed, just API keys)
+# Get free keys at:
+# - NewsAPI: https://newsapi.org
+# - Alpha Vantage: https://www.alphavantage.co
